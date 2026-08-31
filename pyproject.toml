@@ -1,2 +1,2 @@
 [tool.vercel]
-entrypoint = "heatops-ai/backend/app:app"
+entrypoint = "heatops_ai/backend/app:app"
