@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>HeatOps AI</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/styles.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+</head>
+
+<body>
+
+<div class="shell">
+
+    <header>
+
+        <div>
+            <div class="brand">
+                HEATOPS <span>AI</span>
+            </div>
+
+            <div class="sub">
+                Autonomous Heat Intelligence Command Center
+            </div>
+        </div>
+
+        <div class="live">
+            ● SYSTEM READY
+        </div>
+
+    </header>
+
+
+    <section class="mission">
+
+        <label>MISSION</label>
+
+        <textarea id="mission">
+Analyze our Phoenix outdoor construction sites tomorrow. Identify dangerous heat exposure and recommend the safest operating window.
+        </textarea>
+
+        <button id="run">
+            INVESTIGATE
+        </button>
+
+    </section>
+
+
+    <section class="grid">
+
+        <div class="panel">
+
+            <div class="title">
+                INVESTIGATION
+            </div>
+
+            <div
+                id="timeline"
+                class="timeline"
+            >
+                <div class="muted">
+                    Waiting for mission...
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="title">
+                HEAT MAP
+            </div>
+
+            <div id="map"></div>
+
+        </div>
+
+    </section>
+
+
+    <section class="cards">
+
+        <div class="card">
+            <small>RISK</small>
+            <strong id="risk">—</strong>
+            <span id="score">
+                Awaiting investigation
+            </span>
+        </div>
+
+        <div class="card">
+            <small>PEAK</small>
+            <strong id="peak">—</strong>
+            <span id="peakTime">—</span>
+        </div>
+
+        <div class="card">
+            <small>EXCEEDANCE</small>
+            <strong id="exceed">—</strong>
+            <span>hours</span>
+        </div>
+
+        <div class="card">
+            <small>PERSISTENCE</small>
+            <strong id="persist">—</strong>
+            <span>hours</span>
+        </div>
+
+    </section>
+
+
+    <section class="panel recommendation">
+
+        <div class="title">
+            RECOMMENDED ACTION
+        </div>
+
+        <div id="recommendation">
+            Run an investigation to generate an
+            evidence-backed operational recommendation.
+        </div>
+
+    </section>
+
+
+    <section class="panel">
+
+        <div class="title">
+            INVESTIGATION TRACE
+        </div>
+
+        <pre id="trace">
+No investigation yet.
+        </pre>
+
+    </section>
+
+</div>
+
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<script src="/static/app.js"></script>
+
+</body>
+</html>
