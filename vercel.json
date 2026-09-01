@@ -1,4 +1,5 @@
-{
+Set-Content "vercel.json" '{
+  "version": 2,
   "builds": [
     {
       "src": "api/index.py",
@@ -11,4 +12,4 @@
       "dest": "api/index.py"
     }
   ]
-}
+}'
