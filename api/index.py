@@ -6,29 +6,13 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-# Fix import path so fortyguard package is found
-BASE_DIR = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE_DIR))
-
-from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-load_dotenv()
-
-# Try importing FortyGuard client
-try:
-    from heatops_ai.backend.fortyguard import FortyGuardClient
-    from heatops_ai.backend.fortyguard.samples import MANHATTAN_POLYGON
-    FORTYGUARD_IMPORT_ERROR = None
-except Exception as exc:
-    FortyGuardClient = None
-    MANHATTAN_POLYGON = None
-    FORTYGUARD_IMPORT_ERROR = str(exc)
-
+# app must be defined at top level for Vercel to detect it
 app = FastAPI(title="HeatOps AI")
 
 app.add_middleware(
@@ -39,8 +23,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Path setup
+BASE_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(BASE_DIR))
+
 FRONTEND_DIR = BASE_DIR / "heatops_ai" / "frontend"
 app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+
+# Load env
+from dotenv import load_dotenv
+load_dotenv()
+
+# FortyGuard
+try:
+    from heatops_ai.backend.fortyguard import FortyGuardClient
+    from heatops_ai.backend.fortyguard.samples import MANHATTAN_POLYGON
+    FORTYGUARD_IMPORT_ERROR = None
+except Exception as exc:
+    FortyGuardClient = None
+    MANHATTAN_POLYGON = None
+    FORTYGUARD_IMPORT_ERROR = str(exc)
 
 # ── Request model ──────────────────────────────────────────
 class InvestigationRequest(BaseModel):
@@ -109,3 +111,73 @@ def investigate(request: InvestigationRequest):
 
     def add_trace(stage, status, message, **extra):
         trace.append({"timestamp": datetime.utcnow().isoformat() + "Z",
+                      "stage": stage, "status": status, "message": message, **extra})
+
+    add_trace("RECEIVED", "completed", "Mission received.")
+    add_trace("PLANNING", "completed", "Mission structured and evidence plan created.")
+
+    safe_date = safe_historical_date(request.start_date)
+    add_trace("VALIDATING", "completed", f"Using valid FortyGuard date: {safe_date}")
+
+    if FortyGuardClient is None:
+        add_trace("EXECUTING", "failed", "FortyGuard client could not be imported.",
+                  error=FORTYGUARD_IMPORT_ERROR)
+        return {"mission_id": mission_id, "mission": request.mission,
+                "status": "failed", "error": FORTYGUARD_IMPORT_ERROR,
+                "investigation_trace": trace}
+
+    try:
+        client = FortyGuardClient()
+        add_trace("EXECUTING", "completed", "FortyGuard client initialized.")
+    except Exception as exc:
+        add_trace("EXECUTING", "failed", str(exc))
+        return {"mission_id": mission_id, "mission": request.mission,
+                "status": "failed", "error": str(exc), "investigation_trace": trace}
+
+    try:
+        response = client.create_heatmap(
+            polygon_aoi=MANHATTAN_POLYGON,
+            start_date=safe_date,
+            start_time=request.start_time,
+            filter_type=1,
+            granularity=request.granularity,
+            wait=True, poll_interval=5.0, timeout=300.0, verbose=False,
+        )
+        result = response.get("result") or {}
+        activity_id = response.get("activity_id")
+        add_trace("EXECUTING", "completed", "FortyGuard heatmap completed.")
+    except Exception as exc:
+        add_trace("EXECUTING", "failed", str(exc))
+        return {"mission_id": mission_id, "mission": request.mission,
+                "status": "failed", "error": str(exc), "investigation_trace": trace}
+
+    temperatures = extract_temperature_values(result)
+    features = (result.get("map_data") or {}).get("features") or []
+    map_data = result.get("map_data") or {"type": "FeatureCollection", "features": []}
+
+    peak = max(temperatures) if temperatures else None
+    avg  = sum(temperatures) / len(temperatures) if temperatures else None
+    mini = min(temperatures) if temperatures else None
+    risk_level, risk_score = calculate_risk(peak, request.threshold_celsius)
+    recommendation = recommendation_for_risk(risk_level)
+
+    add_trace("ANALYZING", "completed", "Heat-risk analysis completed.", risk_level=risk_level)
+    add_trace("DECIDING", "completed", "Operational decision generated.")
+    add_trace("COMPLETED", "completed", "Investigation completed successfully.")
+
+    return {
+        "schema_version": "1.0",
+        "mission_id": mission_id,
+        "mission": request.mission,
+        "status": "completed",
+        "date": {"requested": request.start_date, "used": safe_date},
+        "risk_summary": {"risk_level": risk_level, "risk_score": risk_score,
+                         "threshold_celsius": request.threshold_celsius,
+                         "threshold_exceeded": peak is not None and peak > request.threshold_celsius},
+        "peak_heat": {"peak_temperature": peak, "average_temperature": avg,
+                      "minimum_temperature": mini, "date": safe_date, "time": request.start_time},
+        "recommendations": [{"risk_level": risk_level, "action": recommendation}],
+        "map_data": map_data,
+        "fortyguard": {"activity_id": activity_id, "endpoint": "/v1/heatmap"},
+        "investigation_trace": trace,
+    }
