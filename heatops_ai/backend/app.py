@@ -16,12 +16,24 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+try:
+    from dotenv import load_dotenv  # type: ignore[import-not-found]
+except ImportError:  # pragma: no cover - optional dependency for local env files
+    def load_dotenv(*_args, **_kwargs):
+        return False
+
+try:
+    from fastapi import FastAPI, HTTPException  # type: ignore[import-not-found]
+    from fastapi.responses import FileResponse  # type: ignore[import-not-found]
+    from fastapi.staticfiles import StaticFiles  # type: ignore[import-not-found]
+    from fastapi.middleware.cors import CORSMiddleware  # type: ignore[import-not-found]
+except ImportError as exc:  # pragma: no cover - dependency must be installed
+    raise RuntimeError(
+        "FastAPI is required to run the HeatOps AI backend. "
+        "Install the project dependencies with 'pip install -r requirements.txt'."
+    ) from exc
+
+from pydantic import BaseModel, Field  # type: ignore[import-not-found]
 
 app = FastAPI()
 
