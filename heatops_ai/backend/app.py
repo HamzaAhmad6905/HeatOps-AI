@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 import sys
+import streamlit as st
 
 ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..")
@@ -9,7 +10,7 @@ ROOT = os.path.abspath(
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from fortyguard import FortyGuardClient
+from heatops_ai.backend.fortyguard import FortyGuardClient
 
 import uuid
 from datetime import date, datetime, timedelta
@@ -54,8 +55,8 @@ load_dotenv(REPO_ROOT / ".env")
 # ============================================================
 
 try:
-    from fortyguard import FortyGuardClient
-    from fortyguard.samples import MANHATTAN_POLYGON
+    from heatops_ai.backend.fortyguard import FortyGuardClient
+    from heatops_ai.backend.fortyguard.samples import MANHATTAN_POLYGON
 except Exception as exc:
     FortyGuardClient = None
     MANHATTAN_POLYGON = None

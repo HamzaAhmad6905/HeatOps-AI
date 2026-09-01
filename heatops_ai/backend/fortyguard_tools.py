@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fortyguard import FortyGuardClient
+from heatops_ai.backend.fortyguard import FortyGuardClient
 
 
 # Small Phoenix demonstration AOI.

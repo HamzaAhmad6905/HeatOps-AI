@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "heatops_ai/backend/app.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "heatops_ai/frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "heatops_ai/backend/app.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "heatops_ai/frontend/$1"
+    }
+  ]
+}

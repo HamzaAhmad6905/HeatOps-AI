@@ -46,8 +46,8 @@ load_dotenv(REPO_ROOT / ".env")
 # ============================================================
 
 try:
-    from fortyguard.client import FortyGuardClient
-    from fortyguard.samples import MANHATTAN_POLYGON
+    from heatops_ai.backend.fortyguard.client import FortyGuardClient
+    from heatops_ai.backend.fortyguard.samples import MANHATTAN_POLYGON
 except Exception as exc:
     FortyGuardClient = None
     MANHATTAN_POLYGON = None
