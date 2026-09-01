@@ -1,16 +1,7 @@
 from __future__ import annotations
+
 import os
 import sys
-
-ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..")
-)
-
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
-
-from fortyguard import FortyGuardClient
-
 import uuid
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -22,6 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -54,7 +46,7 @@ load_dotenv(REPO_ROOT / ".env")
 # ============================================================
 
 try:
-    from fortyguard import FortyGuardClient
+    from fortyguard.client import FortyGuardClient
     from fortyguard.samples import MANHATTAN_POLYGON
 except Exception as exc:
     FortyGuardClient = None
