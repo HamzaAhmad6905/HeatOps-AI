@@ -7,9 +7,10 @@ dependencies = [
     "uvicorn",
     "python-dotenv",
     "pydantic",
-    "openai"
+    "openai",
+    "requests",
+    "httpx"
 ]
-
 [tool.setuptools]
 packages = ["heatops_ai"]
 
